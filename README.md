@@ -1,5 +1,4 @@
-# Smart-earnv26.github.io
-Smart earn v26
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
